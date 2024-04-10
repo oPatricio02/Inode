@@ -31,18 +31,39 @@ struct LinkSimbolico
 	char caminhoAbsoluto[50];
 };
 
+
 struct Bloco
 {
 	char tipo;
 	Diretorio arq;
 	InodeP inodeP;
 	InodeSimples inodeS;
-	TpPilha livres;
 	LinkSimbolico link; 
 };
 
 
+
 struct Disco{
-	
-	
+	int qtdBloco;
+	Bloco *blocos;
+	TpPilha pilha;
 };
+
+void IniciaDisco(Disco &d,int num)
+{
+	d.qtdBloco = num;
+	d.blocos = new Bloco[num];
+	inicializa(d.pilha,num);
+	for(int i=0;i<num;i++)
+		d.blocos[i].tipo = 'F';
+	
+}
+void LiberaDisco(Disco &d) {
+    delete[] d.blocos; 
+    d.blocos = NULL; 
+}
+
+void defeituoso(Disco &d,int num)
+{
+	d.blocos[num].tipo = 'B';
+}

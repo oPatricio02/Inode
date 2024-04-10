@@ -3,6 +3,7 @@
 struct TpPilha
 {
     int TOPO;
+    int qtd;
     int PILHA[MAXPILHA];
 };
 
@@ -14,9 +15,14 @@ int cheia(int topo);
 int vazia(int topo);
 int exibe(TpPilha p);
 
-void inicializa(TpPilha &p)
+void inicializa(TpPilha &p,int q)
 {
     p.TOPO = -1;
+    p.qtd = q;
+ 	for(int i = 0;i<q;i++)
+		insere(p,i);
+	
+	
 }
 
 void insere(TpPilha &p, int Elemento)
@@ -44,7 +50,7 @@ int vazia(int topo)
     return topo == -1;
 }
 
-void exibe(TpPilha p)
+int exibe(TpPilha p)
 {
    while( !vazia(p.TOPO) )
         printf("\n%d",retira(p));

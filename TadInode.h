@@ -22,9 +22,14 @@ struct EntradaDiretorio
 
 struct Diretorio
 {
+	char nome[50];
 	EntradaDiretorio ed[10];
 };
 
+void novoDiretorio(Diretorio &dir,char nome[])
+{
+	strcpy(dir.nome,nome);
+}
 
 struct LinkSimbolico
 {
@@ -66,4 +71,26 @@ void LiberaDisco(Disco &d) {
 void defeituoso(Disco &d,int num)
 {
 	d.blocos[num].tipo = 'B';
+}
+
+int devolverBloco(Disco &d)
+{
+	return retira(&d.pilha);
+}
+
+
+struct Sistema
+{
+	Disco disco;
+	Diretorio atual;
+	int diretorioPai;	
+};
+
+void IniciarSistema(Sistema &sis,Disco &d,Diretorio &dir,int qtd)
+{
+	IniciaDisco(&d,qtd);
+	novoDiretorio(&dir,"/");
+	sis.disco = &d;
+	sis.atual = &dir;
+	
 }

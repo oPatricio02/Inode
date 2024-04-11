@@ -15,7 +15,7 @@ char  menu(void)
     printf("\n2 - Criar Arquivo");
     printf("\n3 - Criar Diretorio");
     printf("\n4 - Selecionar Bloco defeituoso");
-    printf("\n5 - Exibe Pilha");
+    printf("\n5 - Libera disco");
     printf("\n[ESC] - Sair\n");
     printf("\nDigite a opcao desejada: \n");
     
@@ -47,7 +47,7 @@ int main()
 			char nome[50];
 			int qtdb;
 			fflush(stdin);
-			gets(nome);
+			scanf("%s",&nome);
 			printf("Informe o tamanho em bytes\n");
 			scanf("%d\n",&qtdb);
             break;
@@ -56,15 +56,15 @@ int main()
             getch();
             break;
         case '4':
+        	
         	clrscr();
             getch();
             break;
         case '5':
+        	LiberaDisco(disco); 
         	clrscr();
-            getch();
             break;
         }
     }while(opcao!=27);
 	
-	LiberaDisco(disco); 
 }

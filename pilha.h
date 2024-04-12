@@ -7,6 +7,8 @@ struct TpPilha
     int PILHA[MAXPILHA];
 };
 
+//Alterar para a pilha ter o mesmo tamanho do Disco, pois está retornando enddereços de blocos fora do vetor
+
 void inicializa(TpPilha &p, int q);
 void insere(TpPilha &p, int Elemento);
 int retira(TpPilha &p);

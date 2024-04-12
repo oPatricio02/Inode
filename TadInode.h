@@ -195,6 +195,8 @@ void removedir(char *nome,Sistema s, TpPilha &p){
 		{
 			s.disco.blocos[pos].tipo = 'F';
 			insere(p,pos);
+			strcpy(dir.nome,"");
+			strcpy(s.atual.ed[i].nome,"");
 		}
 		else
 		{
@@ -207,19 +209,22 @@ void removedir(char *nome,Sistema s, TpPilha &p){
 		
 }
 
-//criar um arquivo regular
+//criar um arquivo regular   Falta correcao
 void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 { 
 	int qtdb = tamanho/10; //Cada bloco cabe 10 Bytes.	
 	int pos,i =0;
 	if(qtdb >0)
 	{
+		printf("i = %d , qtdb: %d , pos: %d \n", i,qtdb,pos);
 		if(s.atual.cont<=9)
 		{
 			strcpy(s.atual.ed[s.atual.cont].nome,nome);
 			pos = retira(p);
 			s.atual.ed[s.atual.cont].numBlocoInode = pos; 
 			s.atual.cont++;
+			
+			printf("i = %d , qtdb: %d , pos: %d \n", i,qtdb,pos);
 			
 			InodeP inode;
 			inode.tamanho = qtdb;
@@ -230,53 +235,61 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 			
 			while(i<qtdb && i<5)	//Enquanto estiver nos blocos normais, apos cria InodeSimples
 			{
+				printf("i = %d , qtdb: %d , pos: %d ", i,qtdb,pos);
 				pos = retira(p);
 				inode.blocoArq[i] = pos;
 				s.disco.blocos[pos].tipo = 'A';
 				
 				i++;
+				qtdb--;
 			}
-			qtdb-=5;
-			InodeSimples inodeS;
-			pos = retira(p);
-			inode.BcIndireto = pos;
-			s.disco.blocos[pos].tipo = 'I';
-			s.disco.blocos[pos].inodeS = inodeS;
-		
-			i = 0;
-			while(i<qtdb && i<5)   //Inode Simples
+			if(qtdb>0)
 			{
-				pos = retira(p);
-				inodeS.blocos[i] = pos;
-				s.disco.blocos[pos].tipo = 'A';
-				i++;
-			}
-			qtdb-=5;
-			
-			InodeSimples inodeD;
-			pos = retira(p);
-			inode.BcDuplo = pos;
-			s.disco.blocos[pos].tipo = 'I';
-			s.disco.blocos[pos].inodeS = inodeD;
-		
-			i = 0;
-			while(i<5 && i<qtdb)  	//Inode Duplo
-			{
-				pos = retira(p);
-				inodeD.blocos[i] = pos;
-				s.disco.blocos[pos].tipo = 'I';
 				InodeSimples inodeS;
+				pos = retira(p);
+				inode.BcIndireto = pos;
+				s.disco.blocos[pos].tipo = 'I';
 				s.disco.blocos[pos].inodeS = inodeS;
-				for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
+			
+				i = 0;
+				while(i<qtdb && i<5)   //Inode Simples
 				{
 					pos = retira(p);
-					inodeS.blocos[j] = pos;
+					inodeS.blocos[i] = pos;
 					s.disco.blocos[pos].tipo = 'A';
+					i++;
+					qtdb--;
 				}
-				i++;
+				
+				
+				InodeSimples inodeD;
+				pos = retira(p);
+				inode.BcDuplo = pos;
+				s.disco.blocos[pos].tipo = 'I';
+				s.disco.blocos[pos].inodeS = inodeD;
+			
+				i = 0;
+				while(i<5 && i<qtdb)  	//Inode Duplo
+				{
+					pos = retira(p);
+					inodeD.blocos[i] = pos;
+					s.disco.blocos[pos].tipo = 'I';
+					InodeSimples inodeS;
+					s.disco.blocos[pos].inodeS = inodeS;
+					for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
+					{
+						pos = retira(p);
+						inodeS.blocos[j] = pos;
+						s.disco.blocos[pos].tipo = 'A';
+					}
+					i++;
+					qtdb--;
+				}
+				
+				//Inode Triplo
+				
 			}
 			
-			//Inode Triplo
 			
 			
 		}

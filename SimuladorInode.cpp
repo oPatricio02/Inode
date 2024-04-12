@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<time.h>
 #include<conio.h>
-#include"conio2.h"
+#include"meuconio.h"
 #include<string.h>
 #include"pilha.h"
 #include"PilhaDiretorio.h"
@@ -19,6 +19,7 @@ char  menu(char caminho[])
     printf("\n5 - ls (listar)");
     printf("\n6 - ls -l (listara)");
     printf("\n7 - touch (Criar Aquivo)");
+    printf("\n8 - Bloco defeituoso");
     printf("\n[ESC] - Sair\n");
     printf("\nDigite a opcao desejada: \n");
     return getche();
@@ -27,16 +28,19 @@ char  menu(char caminho[])
 
 int main()
 {
-	int tam;
+	int tam,aux;
 	char opcao;
 	char comando[100], *linhacmd, operacao[50], nome[100], caminho[1000] = "~/";
+	printf("Qual o tamanho do disco desejado?\n");
+	scanf("%d", &tam);
+	getch();
 	TpPilha p;
 	PilhaDir pdir;
 	Disco d;
 	Sistema s;
 	inicializa(p, 1000);
 	inicializaDir(pdir);
-	IniciarSistema(s, d, 1000, pdir, p);
+	IniciarSistema(s, d, tam, pdir, p);
 	
 	do
     {
@@ -85,6 +89,12 @@ int main()
         	touch(nome,s,p,tam);
         	getch();
         	break;
+    	case '8':
+    	printf("\nInforme o numero do bloco\n");
+    	scanf("%d", &aux);
+    	defeituoso(d,aux);
+    	getch();
+    	break;
         }
     }while(opcao!=27);
 	

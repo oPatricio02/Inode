@@ -39,6 +39,35 @@ void newInode(InodeP &i)
 	i.permissoes[10] = '\0';
 	
 }
+
+void newInodeD(InodeP &i)
+{
+	time_t tem;
+	tm *inTempo;
+	
+	time(&tem);
+	inTempo = localtime(&tem);
+	
+	//Pegar horario
+	data[0] = inTempo->tm_hour;
+	data[1] = inTempo->tm_min;
+	data[2] = inTempo->tm_mday;
+	data[3] = inTempo->tm_mon+1;
+	data[4] = inTempo->tm_year+1900;
+	
+	i.permissoes[0] = 'd';
+	i.permissoes[1] = 'r';
+	i.permissoes[2] = 'w';
+	i.permissoes[3] = 'x';
+	i.permissoes[4] = 'r';
+	i.permissoes[5] = 'w';
+	i.permissoes[6] = 'x';
+	i.permissoes[7] = 'r';
+	i.permissoes[8] = 'w';
+	i.permissoes[9] = x;
+	i.permissoes[10] = '\0';
+	
+}
 struct InodeSimples
 {
 	int blocos[5];
@@ -152,16 +181,35 @@ void listL(Sistema s){
 
 void makedir(*char nome, Sistema s, TpPilha &p)
 {	
-	int numbloco = retira(p);
-	Diretorio dir = new Diretorio;
-	strcpy(dir.nome,nome);
-	dir.cont=0;
-	s.atual.ed[s.atual.cont].numBlocoInode=numbloco;
-	strcpy(s.atual.ed[s.atual.cont].nome,nome);
-	s.atual.cont++;
+	int numbloco;
+	
+	if(s.atual.cont<=9)
+	{
+		numbloco = retira(&p);
+		Diretorio dir = new Diretorio;
+		strcpy(dir.nome,nome);
+		dir.cont=0;
+		
+		s.atual.ed[s.atual.cont].numBlocoInode=numbloco;
+		strcpy(s.atual.ed[s.atual.cont].nome,nome);
+		s.atual.cont++;
+		
+		InodeP inode = new InodeP;
+		newInodeD(&inode);
+		
+		s.disco.blocos[numbloco].tipo = 'I';
+		s.disco.blocos[numbloco].inodeP = inode;
+			
+	}
+	else
+		printf("Diretorio cheio!\n");
+	
+		
 }
 
-void removedir(*char nome){
+void removedir(*char nome,Sistema s, TpPilha &p){
+	
+	
 	
 }
 

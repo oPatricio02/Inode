@@ -358,6 +358,23 @@ void remove(char *nome,Sistema s,TpPilha &p){ //remove um arquivo
 		printf("Arquivo nao encontrado!\n");
 }
 
+void remove_palavra(char * frase, char * palavra)
+{
+    int tamanhoFrase = strlen(frase);
+    int tamanhoPalavra = strlen(palavra);
+    char * ponteiro = strstr(frase, palavra);
+    if(ponteiro)
+    {    
+        int posicao = (ponteiro - frase);
+		ponteiro = ponteiro + tamanhoPalavra;                
+        int i;
+        for(i = 0; i < strlen(ponteiro); i++)
+            frase[posicao + i] = ponteiro[i]; 
+
+       frase[posicao + i] = 0;      
+    }   
+}
+
 char* cd(Sistema &s, PilhaDir &pdir, char *nome){
 	int i;
 	bool flag = false;

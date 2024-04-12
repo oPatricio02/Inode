@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<time.h>
 #include<conio.h>
-#include"meuconio.h"
+#include<conio2.h>
 #include<string.h>
 #include"pilha.h"
 #include"PilhaDiretorio.h"
@@ -11,7 +11,7 @@
 char  menu(char caminho[])
 {
     clrscr();
-    printf("%s",caminho);
+    printf("%s\n",caminho);
     printf("\n1 - cd");
     printf("\n2 - cd ..");
     printf("\n3 - mkdir (Criar Diretorio)");
@@ -30,10 +30,10 @@ int main()
 {
 	int tam,aux;
 	char opcao;
-	char comando[100], *linhacmd, operacao[50], nome[100], caminho[1000] = "~/";
+	char auxnome[100], comando[100], *linhacmd, operacao[50], nome[100], caminho[1000] = "~/";
 	printf("Qual o tamanho do disco desejado?\n");
 	scanf("%d", &tam);
-	getch();
+	
 	TpPilha p;
 	PilhaDir pdir;
 	Disco d;
@@ -49,17 +49,21 @@ int main()
         switch(opcao)
         {
         case '1':
-            printf("\nInforme o nome do diretório\n");
+            printf("\nInforme o nome do diretorio\n");
         	scanf("%s",&nome);
         	linhacmd = cd(s, pdir, nome);
         	if(strcmp(linhacmd,"")!=0){
         		strcat(caminho, linhacmd);
+        		strcat(caminho, "/");
         	}
         	else{
         		getch();	
         	}
             break;
         case '2':
+        	strcpy(auxnome,s.atual.nome);
+        	strcat(auxnome,"/");
+        	remove_palavra(caminho, auxnome);
         	cdponto(pdir,s);
             break;
         case '3':
@@ -74,60 +78,33 @@ int main()
         	removedir(nome,s,p);
             break;
         case '5':
+        	clrscr();
+        	printf("%s\n",caminho);
         	list(s);
         	getch();
             break;
         case '6':
+        	clrscr();
+        	printf("%s\n",caminho);
         	listL(s);
         	getch();
             break;
         case '7':
         	printf("\nInforme o nome do arquivo\n");
         	scanf("%s", &nome);
-        	printf("\nInforme o tamanho dele em Bytes\n");
+        	printf("Informe o tamanho dele em Bytes\n");
         	scanf("%d", &tam);
         	touch(nome,s,p,tam);
         	getch();
         	break;
     	case '8':
-    	printf("\nInforme o numero do bloco\n");
-    	scanf("%d", &aux);
-    	defeituoso(d,aux);
-    	getch();
+	    	printf("\nInforme o numero do bloco\n");
+	    	scanf("%d", &aux);
+	    	defeituoso(d,aux);
+	    	getch();
     	break;
         }
     }while(opcao!=27);
-	
-}
-/*
-int main(){
-	bool parar = false;
-	char comando[100], *linhacmd, operacao[50], nome[100], caminho[1000];
-	TpPilha p;
-	PilhaDir pdir;
-	Disco d;
-	Sistema s;
-	inicializa(p, 1000);
-	inicializaDir(pdir);
-	IniciarSistema(s, d, 1000, pdir, p);
-	
-	strcpy(caminho, "~/");
-	while(!parar){
-		
-		printf("\n%s", caminho);
-		
-		scanf("%s", &comando);
-		
-		linhacmd = strtok(comando, " ");
-		while(linhacmd!=NULL){
-			strcpy(operacao,linhacmd);
-			linhacmd = strtok(NULL, " ");
-			strcpy(nome,linhacmd);
-		}
-		printf("%s\n", operacao);
-		printf("%s", nome);
-	}
-	
+    
 	return 0;
 }
-*/

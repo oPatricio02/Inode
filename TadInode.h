@@ -1,5 +1,3 @@
-#include"pilha.h"
-
 struct InodeP
 {
 	int data[5];
@@ -20,11 +18,11 @@ void newInode(InodeP &i)
 	inTempo = localtime(&tem);
 	
 	//Pegar horario
-	data[0] = inTempo->tm_hour;
-	data[1] = inTempo->tm_min;
-	data[2] = inTempo->tm_mday;
-	data[3] = inTempo->tm_mon+1;
-	data[4] = inTempo->tm_year+1900;
+	i.data[0] = inTempo->tm_hour;
+	i.data[1] = inTempo->tm_min;
+	i.data[2] = inTempo->tm_mday;
+	i.data[3] = inTempo->tm_mon+1;
+	i.data[4] = inTempo->tm_year+1900;
 	
 	i.permissoes[0] = '-';
 	i.permissoes[1] = 'r';
@@ -35,7 +33,7 @@ void newInode(InodeP &i)
 	i.permissoes[6] = 'x';
 	i.permissoes[7] = 'r';
 	i.permissoes[8] = 'w';
-	i.permissoes[9] = x;
+	i.permissoes[9] = 'x';
 	i.permissoes[10] = '\0';
 	
 }
@@ -49,11 +47,11 @@ void newInodeD(InodeP &i)
 	inTempo = localtime(&tem);
 	
 	//Pegar horario
-	data[0] = inTempo->tm_hour;
-	data[1] = inTempo->tm_min;
-	data[2] = inTempo->tm_mday;
-	data[3] = inTempo->tm_mon+1;
-	data[4] = inTempo->tm_year+1900;
+	i.data[0] = inTempo->tm_hour;
+	i.data[1] = inTempo->tm_min;
+	i.data[2] = inTempo->tm_mday;
+	i.data[3] = inTempo->tm_mon+1;
+	i.data[4] = inTempo->tm_year+1900;
 	
 	i.permissoes[0] = 'd';
 	i.permissoes[1] = 'r';
@@ -64,26 +62,13 @@ void newInodeD(InodeP &i)
 	i.permissoes[6] = 'x';
 	i.permissoes[7] = 'r';
 	i.permissoes[8] = 'w';
-	i.permissoes[9] = x;
+	i.permissoes[9] = 'x';
 	i.permissoes[10] = '\0';
 	
 }
 struct InodeSimples
 {
 	int blocos[5];
-};
-
-struct EntradaDiretorio 
-{
-	char nome[50];
-	int numBlocoInode;
-};
-
-struct Diretorio
-{
-	char nome[50];
-	EntradaDiretorio ed[10];
-	int cont;
 };
 
 struct LinkSimbolico
@@ -138,50 +123,44 @@ struct Sistema
 
 void IniciarSistema(Sistema &sis,Disco &d,int qtd, PilhaDir &pdir, TpPilha &p)
 {
-	IniciaDisco(&d,qtd);
-	makedir("/", sis, p); //Criar uma função para criar o raiz
-	insereDir(pdir, dir);
-	sis.disco = &d;
-	sis.atual = &dir;
-	
+    IniciaDisco(d,qtd);
+    inicializaDir(pdir);
+    Diretorio raiz;
+    raiz.cont = 0;
+    strcpy(raiz.nome, "/");
+    sis.atual = raiz;
+    insereDir(pdir, raiz);
+    sis.disco = d;
 }
-
-int primeiroEDlivre()
 
 //Operações
 
-
-void visualize(*char nome){
-
-}
-
 void list(Sistema s){
 	int i;
-	for(i=0; i<10; i++){
-		printf("%s/n",s.atual.ed[i].nome)
+	for(i=0; i<s.atual.cont; i++){
+		printf("\n%s",s.atual.ed[i].nome);
 	}
 }
 
 void listL(Sistema s){
 	int i;
 	
-	for(i=0; i<10; i++){
-		printf("%s, %d, %s, %s/n",
+	for(i=0; i<s.atual.cont; i++){
+		printf("\n%s, %d, %s, %s",
 		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.permissoes,
 		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.tamanho,
 		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.data,
-		s.atual.ed[i].nome)
+		s.atual.ed[i].nome);
 	}
 }
 
-void makedir(*char nome, Sistema s, TpPilha &p)
-{	
+void makedir(char *nome, Sistema &s, TpPilha &p){	
 	int numbloco;
 	
 	if(s.atual.cont<=9)
 	{
-		numbloco = retira(&p);
-		Diretorio dir = new Diretorio;
+		numbloco = retira(p);
+		Diretorio dir;
 		strcpy(dir.nome,nome);
 		dir.cont=0;
 		
@@ -189,21 +168,21 @@ void makedir(*char nome, Sistema s, TpPilha &p)
 		strcpy(s.atual.ed[s.atual.cont].nome,nome);
 		s.atual.cont++;
 		
-		InodeP inode = new InodeP;
-		newInodeD(&inode);
+		InodeP inode;
+		newInodeD(inode);
 		
 		s.disco.blocos[numbloco].tipo = 'I';
 		s.disco.blocos[numbloco].inodeP = inode;
 		s.disco.blocos[numbloco].arq = dir;
 			
 	}
-	else
+	else{
 		printf("Diretorio cheio!\n");
-	
+	}
 		
 }
 
-void removedir(*char nome,Sistema s, TpPilha &p){
+void removedir(char *nome,Sistema s, TpPilha &p){
 	
 	int i=0;
 	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome,nome) != 0 )	
@@ -215,7 +194,7 @@ void removedir(*char nome,Sistema s, TpPilha &p){
 		if(dir.cont == 0)
 		{
 			s.disco.blocos[pos].tipo = 'F';
-			insere(&p,pos);
+			insere(p,pos);
 		}
 		else
 		{
@@ -229,7 +208,7 @@ void removedir(*char nome,Sistema s, TpPilha &p){
 }
 
 //criar um arquivo regular
-void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
+void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 { 
 	int qtdb = tamanho/10; //Cada bloco cabe 10 Bytes.	
 	int pos,i =0;
@@ -238,28 +217,28 @@ void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
 		if(s.atual.cont<=9)
 		{
 			strcpy(s.atual.ed[s.atual.cont].nome,nome);
-			pos = retira(&p);
+			pos = retira(p);
 			s.atual.ed[s.atual.cont].numBlocoInode = pos; 
 			s.atual.cont++;
 			
-			InodeP inode = new InodeP;
+			InodeP inode;
 			inode.tamanho = qtdb;
-			newInode(&inode);
+			newInode(inode);
 			
 			s.disco.blocos[pos].tipo = 'I';
 			s.disco.blocos[pos].inodeP = inode; 
 			
 			while(i<qtdb && i<5)	//Enquanto estiver nos blocos normais, apos cria InodeSimples
 			{
-				pos = retira(&p);
+				pos = retira(p);
 				inode.blocoArq[i] = pos;
 				s.disco.blocos[pos].tipo = 'A';
 				
 				i++;
 			}
 			qtdb-=5;
-			InodeSimples inodeS = new InodeSimples;
-			pos = retira(&p);
+			InodeSimples inodeS;
+			pos = retira(p);
 			inode.BcIndireto = pos;
 			s.disco.blocos[pos].tipo = 'I';
 			s.disco.blocos[pos].inodeS = inodeS;
@@ -267,15 +246,15 @@ void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
 			i = 0;
 			while(i<qtdb && i<5)   //Inode Simples
 			{
-				pos = retira(&p);
+				pos = retira(p);
 				inodeS.blocos[i] = pos;
 				s.disco.blocos[pos].tipo = 'A';
 				i++;
 			}
 			qtdb-=5;
 			
-			InodeSimples inodeD = new InodeSimples;
-			pos = retira(&p);
+			InodeSimples inodeD;
+			pos = retira(p);
 			inode.BcDuplo = pos;
 			s.disco.blocos[pos].tipo = 'I';
 			s.disco.blocos[pos].inodeS = inodeD;
@@ -283,14 +262,14 @@ void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
 			i = 0;
 			while(i<5 && i<qtdb)  	//Inode Duplo
 			{
-				pos = retira(&p);
+				pos = retira(p);
 				inodeD.blocos[i] = pos;
 				s.disco.blocos[pos].tipo = 'I';
-				InodeSimples inodeS = new InodeSimples;
+				InodeSimples inodeS;
 				s.disco.blocos[pos].inodeS = inodeS;
 				for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
 				{
-					pos = retira(&p);
+					pos = retira(p);
 					inodeS.blocos[j] = pos;
 					s.disco.blocos[pos].tipo = 'A';
 				}
@@ -309,7 +288,7 @@ void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
 	
 }
 
-void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
+void remove(char *nome,Sistema s,TpPilha &p){ //remove um arquivo
 	bool flag = false;
 	int i =0,pos,aux,tam;
 	InodeP inode;
@@ -324,25 +303,25 @@ void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
 		{
 			aux = inode.blocoArq[j];
 			s.disco.blocos[aux].tipo = 'F';
-			insere(&p,aux);
+			insere(p,aux);
 		}	
 		
 		aux = inode.BcIndireto;
 		InodeSimples inodeS = s.disco.blocos[aux].inodeS;
 		s.disco.blocos[aux].tipo = 'F';
-		insere(&p,aux);
+		insere(p,aux);
 		
 		for(int j=0;j<5 && j<tam; j++,tam--)
 		{
 			aux = inodeS.blocos[j];
 			s.disco.blocos[aux].tipo = 'F';
-			insere(&p,aux);
+			insere(p,aux);
 		}
 		
 		aux = inode.BcDuplo;
 		InodeSimples inodeD = s.disco.blocos[aux].inodeS;
 		s.disco.blocos[aux].tipo = 'F';
-		insere(&p,aux);
+		insere(p,aux);
 		
 		i = 0;
 		while(i<5 && i<tam)
@@ -350,12 +329,12 @@ void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
 			aux = inodeD.blocos[i];
 			InodeSimples inodeSi = s.disco.blocos[aux].inodeS;
 			s.disco.blocos[aux].tipo = 'F';
-			insere(&p,aux);
+			insere(p,aux);
 			for(int j =0;j<5 && j<tam;j++,tam--)
 			{
 				aux = inodeSi.blocos[j];
 				s.disco.blocos[aux].tipo = 'F';
-				insere(&p,aux);
+				insere(p,aux);
 			}
 			
 			i++;
@@ -366,7 +345,7 @@ void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
 		printf("Arquivo nao encontrado!\n");
 }
 
-void cd(Sistema &s, PilhaDir &pdir, *char nome){
+char* cd(Sistema &s, PilhaDir &pdir, char *nome){
 	int i;
 	bool flag = false;
 	int aux;
@@ -374,22 +353,24 @@ void cd(Sistema &s, PilhaDir &pdir, *char nome){
 		if(strcmp(s.atual.ed[i].nome,nome)== 0)
 		{
 			flag = true;
-			aux = s.atual.ed[i].numblocoinode;
+			aux = s.atual.ed[i].numBlocoInode;
 		}
 	}
 	if(flag){
 		insereDir(pdir, s.atual);
 		s.atual = s.disco.blocos[aux].arq;
+		return s.atual.nome;
 	}
 	else{
 		printf("Diretorio não existe\n");
+		return "";
 	}
 }
 
 void cdponto(PilhaDir &pdir, Sistema &s){
 	Diretorio aux;
 	
-	if(pdir.Topo!=0){ //verifica se não é o diretório raiz
+	if(pdir.TOPO!=0){ //verifica se não é o diretório raiz
 		aux = retiraDir(pdir);
 		s.atual = aux;
 	}

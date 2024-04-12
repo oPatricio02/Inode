@@ -1,5 +1,18 @@
 #define MAXPILHA 1000
 
+struct EntradaDiretorio 
+{
+	char nome[50];
+	int numBlocoInode;
+};
+
+struct Diretorio
+{
+	char nome[50];
+	EntradaDiretorio ed[10];
+	int cont;
+};
+
 struct PilhaDir
 {
     int TOPO;
@@ -8,12 +21,12 @@ struct PilhaDir
 };
 
 void inicializaDir(PilhaDir &p);
-void insere(PilhaDir &p, int Elemento);
-int retira(PilhaDir &p);
-int elementoTopo(PilhaDir p);
-int cheia(int topo);
-int vazia(int topo);
-int exibe(PilhaDir p);
+void insereDir(PilhaDir &p, int Elemento);
+Diretorio retiraDir(PilhaDir &p);
+Diretorio elementoTopo(PilhaDir p);
+int cheiaDir(int topo);
+int vaziaDir(int topo);
+
 
 void inicializaDir(PilhaDir &p)
 {

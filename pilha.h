@@ -7,7 +7,7 @@ struct TpPilha
     int PILHA[MAXPILHA];
 };
 
-void inicializa(TpPilha &p);
+void inicializa(TpPilha &p, int q);
 void insere(TpPilha &p, int Elemento);
 int retira(TpPilha &p);
 int elementoTopo(TpPilha p);

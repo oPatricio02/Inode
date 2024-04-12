@@ -6,7 +6,7 @@
 #include<string.h>
 #include"pilha.h"
 #include"TadInode.h"
-
+#include"PilhaDiretorio.h"
 
 char  menu(void)
 {

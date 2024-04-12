@@ -128,11 +128,6 @@ void defeituoso(Disco &d,int num)
 	d.blocos[num].tipo = 'B';
 }
 
-int devolverBloco(Disco &d)
-{
-	return retira(&d.pilha);
-}
-
 
 struct Sistema
 {
@@ -199,6 +194,7 @@ void makedir(*char nome, Sistema s, TpPilha &p)
 		
 		s.disco.blocos[numbloco].tipo = 'I';
 		s.disco.blocos[numbloco].inodeP = inode;
+		s.disco.blocos[numbloco].arq = dir;
 			
 	}
 	else
@@ -209,8 +205,27 @@ void makedir(*char nome, Sistema s, TpPilha &p)
 
 void removedir(*char nome,Sistema s, TpPilha &p){
 	
-	
-	
+	int i=0;
+	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome,nome) != 0 )	
+		i++;
+	if(strcmp(s.atual.ed[i].nome,nome) == 0)
+	{
+		int pos = s.atual.ed[i].numBlocoInode;
+		Diretorio dir = s.disco.blocos[pos].arq;
+		if(dir.cont == 0)
+		{
+			s.disco.blocos[pos].tipo = 'F';
+			insere(&p,pos);
+		}
+		else
+		{
+			printf("Diretorio cheio!\n");
+		}
+		
+	}
+	else
+		printf("Diretorio nao encontrado!");
+		
 }
 
 //criar um arquivo regular
@@ -298,9 +313,9 @@ void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
 	bool flag = false;
 	int i =0,pos,aux,tam;
 	InodeP inode;
-	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome, nome)!="0")
+	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome, nome)!= 0)
 		i++;
-	if(strcmp(s.atual.ed[i].nome, nome)=="0")
+	if(strcmp(s.atual.ed[i].nome, nome)== 0)
 	{
 		pos = s.atual.ed[i].numBlocoInode;
 		inode = s.disco.blocos[pos].inodeP;
@@ -356,7 +371,7 @@ void cd(Sistema &s, PilhaDir &pdir, *char nome){
 	bool flag = false;
 	int aux;
 	for(i=0; i<10; i++){
-		if(strcmp(s.atual.ed[i].nome,nome)=="0")
+		if(strcmp(s.atual.ed[i].nome,nome)== 0)
 		{
 			flag = true;
 			aux = s.atual.ed[i].numblocoinode;

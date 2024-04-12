@@ -10,6 +10,35 @@ struct InodeP
 	int BcDuplo;
 	int BcTriplo;
 };
+
+void newInode(InodeP &i)
+{
+	time_t tem;
+	tm *inTempo;
+	
+	time(&tem);
+	inTempo = localtime(&tem);
+	
+	//Pegar horario
+	data[0] = inTempo->tm_hour;
+	data[1] = inTempo->tm_min;
+	data[2] = inTempo->tm_mday;
+	data[3] = inTempo->tm_mon+1;
+	data[4] = inTempo->tm_year+1900;
+	
+	i.permissoes[0] = '-';
+	i.permissoes[1] = 'r';
+	i.permissoes[2] = 'w';
+	i.permissoes[3] = 'x';
+	i.permissoes[4] = 'r';
+	i.permissoes[5] = 'w';
+	i.permissoes[6] = 'x';
+	i.permissoes[7] = 'r';
+	i.permissoes[8] = 'w';
+	i.permissoes[9] = x;
+	i.permissoes[10] = '\0';
+	
+}
 struct InodeSimples
 {
 	int blocos[5];
@@ -25,7 +54,7 @@ struct Diretorio
 {
 	char nome[50];
 	EntradaDiretorio ed[10];
-	int cont
+	int cont;
 };
 
 struct LinkSimbolico
@@ -136,20 +165,142 @@ void removedir(*char nome){
 	
 }
 
-void touch(*char nome, Sistema s, TpPilha &p{ //criar um arquivo regular
-	int numbloco = retira(p);
-	s.atual.ed[s.atual.cont].numBlocoInode=numbloco;
-	strcpy(s.atual.ed[s.atual.cont].nome,nome);
-	s.atual.cont++;
-}
-
-void remove(*char nome){ //remove um arquivo
-	int i;
-	for{i=0; i<s.atual.cont; i++}{
-		if(strcmp(s.atual.ed[i].nome, nome)=="0"){
+//criar um arquivo regular
+void touch(*char nome, Sistema s, TpPilha &p,int tamanho)
+{ 
+	int qtdb = tamanho/10; //Cada bloco cabe 10 Bytes.	
+	int pos,i =0;
+	if(qtdb >0)
+	{
+		if(s.atual.cont<=9)
+		{
+			strcpy(s.atual.ed[s.atual.cont].nome,nome);
+			pos = retira(&p);
+			s.atual.ed[s.atual.cont].numBlocoInode = pos; 
+			s.atual.cont++;
+			
+			InodeP inode = new InodeP;
+			inode.tamanho = qtdb;
+			newInode(&inode);
+			
+			s.disco.blocos[pos].tipo = 'I';
+			s.disco.blocos[pos].inodeP = inode; 
+			
+			while(i<qtdb && i<5)	//Enquanto estiver nos blocos normais, apos cria InodeSimples
+			{
+				pos = retira(&p);
+				inode.blocoArq[i] = pos;
+				s.disco.blocos[pos].tipo = 'A';
+				
+				i++;
+			}
+			qtdb-=5;
+			InodeSimples inodeS = new InodeSimples;
+			pos = retira(&p);
+			inode.BcIndireto = pos;
+			s.disco.blocos[pos].tipo = 'I';
+			s.disco.blocos[pos].inodeS = inodeS;
+		
+			i = 0;
+			while(i<qtdb && i<5)   //Inode Simples
+			{
+				pos = retira(&p);
+				inodeS.blocos[i] = pos;
+				s.disco.blocos[pos].tipo = 'A';
+				i++;
+			}
+			qtdb-=5;
+			
+			InodeSimples inodeD = new InodeSimples;
+			pos = retira(&p);
+			inode.BcDuplo = pos;
+			s.disco.blocos[pos].tipo = 'I';
+			s.disco.blocos[pos].inodeS = inodeD;
+		
+			i = 0;
+			while(i<5 && i<qtdb)  	//Inode Duplo
+			{
+				pos = retira(&p);
+				inodeD.blocos[i] = pos;
+				s.disco.blocos[pos].tipo = 'I';
+				InodeSimples inodeS = new InodeSimples;
+				s.disco.blocos[pos].inodeS = inodeS;
+				for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
+				{
+					pos = retira(&p);
+					inodeS.blocos[j] = pos;
+					s.disco.blocos[pos].tipo = 'A';
+				}
+				i++;
+			}
+			
+			//Inode Triplo
+			
 			
 		}
+		else
+		{
+			printf("Diretorio cheio!\n");
+		}
 	}
+	
+}
+
+void remove(*char nome,Sistema s,TpPilha &p){ //remove um arquivo
+	bool flag = false;
+	int i =0,pos,aux,tam;
+	InodeP inode;
+	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome, nome)!="0")
+		i++;
+	if(strcmp(s.atual.ed[i].nome, nome)=="0")
+	{
+		pos = s.atual.ed[i].numBlocoInode;
+		inode = s.disco.blocos[pos].inodeP;
+		tam = inode.tamanho;
+		for(int j=0;j<5 && j<tam;j++,tam--)
+		{
+			aux = inode.blocoArq[j];
+			s.disco.blocos[aux].tipo = 'F';
+			insere(&p,aux);
+		}	
+		
+		aux = inode.BcIndireto;
+		InodeSimples inodeS = s.disco.blocos[aux].inodeS;
+		s.disco.blocos[aux].tipo = 'F';
+		insere(&p,aux);
+		
+		for(int j=0;j<5 && j<tam; j++,tam--)
+		{
+			aux = inodeS.blocos[j];
+			s.disco.blocos[aux].tipo = 'F';
+			insere(&p,aux);
+		}
+		
+		aux = inode.BcDuplo;
+		InodeSimples inodeD = s.disco.blocos[aux].inodeS;
+		s.disco.blocos[aux].tipo = 'F';
+		insere(&p,aux);
+		
+		i = 0;
+		while(i<5 && i<tam)
+		{
+			aux = inodeD.blocos[i];
+			InodeSimples inodeSi = s.disco.blocos[aux].inodeS;
+			s.disco.blocos[aux].tipo = 'F';
+			insere(&p,aux);
+			for(int j =0;j<5 && j<tam;j++,tam--)
+			{
+				aux = inodeSi.blocos[j];
+				s.disco.blocos[aux].tipo = 'F';
+				insere(&p,aux);
+			}
+			
+			i++;
+			tam --;
+		}	
+	}
+	else
+		printf("Arquivo nao encontrado!\n");
 }
 
 void cd(Sistema &s, PilhaDir &pdir, *char nome){
@@ -168,7 +319,7 @@ void cd(Sistema &s, PilhaDir &pdir, *char nome){
 		s.atual = s.disco.blocos[aux].arq;
 	}
 	else{
-		printf("Diretorio não existe");
+		printf("Diretorio não existe\n");
 	}
 }
 

@@ -79,8 +79,19 @@ char  menu(char caminho[], char nome[], int &tam, int &aux)
 	    	aux = atoi(strings[1]);
     	}
 	}
-    
-    
+	
+	if(strcmp(strings[0],"status")==0){
+    	if(qtd_strings==1){
+	    	opcao = '9';
+    	}
+	}
+	
+	if(strcmp(strings[0],"freespace")==0){
+    	if(qtd_strings==1){
+	    	opcao = '0';
+    	}
+	}
+	
     return opcao;
 }
 

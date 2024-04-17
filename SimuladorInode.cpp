@@ -2,29 +2,86 @@
 #include<stdlib.h>
 #include<time.h>
 #include<conio.h>
-#include"meuconio.h"
+#include<conio2.h>
 #include<string.h>
 #include"pilha.h"
 #include"PilhaDiretorio.h"
 #include"TadInode.h"
 
-char  menu(char caminho[])
+int qtd_espacos(char *str){
+    int espacos = 0;
+    while(*str){
+        if (*str == ' '){
+           espacos++;
+        }
+        str++;
+    }
+    return espacos;
+}
+
+char  menu(char caminho[], char nome[], int &tam, int &aux)
 {	
     clrscr();
-    printf("%s\n",caminho);
-    printf("\n1 - cd");
-    printf("\n2 - cd ..");
-    printf("\n3 - mkdir (Criar Diretorio)");
-    printf("\n4 - rmdir (Remover Diretorio)");
-    printf("\n5 - ls (listar)");
-    printf("\n6 - ls -l (listara)");
-    printf("\n7 - touch (Criar Aquivo)");
-    printf("\n8 - Bloco defeituoso");
-    printf("\n9 - Estado dos blocos");
-    printf("\n0 - Quantidade de Bytes livres");
-    printf("\n[ESC] - Sair\n");
-    printf("\nDigite a opcao desejada: \n");
-    return getche();
+    char opcao, comando[500];
+    printf("%s",caminho);
+    fgets(comando, sizeof(comando), stdin);
+    remove_palavra(comando, "\n");
+    int qtd_strings = qtd_espacos(comando) + 1, i = 0;
+    char strings[qtd_strings][strlen(comando)];
+    char *pch = strtok (comando," ");
+    while (pch != NULL){
+        strcpy(strings[i++], pch);
+        pch = strtok (NULL, " ");
+    }
+    
+    if(strcmp(strings[0],"cd")==0){
+    	opcao = '1';
+    	strcpy(nome, strings[1]);
+    }
+    
+    if(strcmp(strings[0],"cd..")==0){
+    	opcao = '2';
+    }
+    
+    if(strcmp(strings[0],"mkdir")==0){
+    	if(qtd_strings==2){
+	    	opcao = '3';
+	    	strcpy(nome, strings[1]);	
+    	}
+    }
+    
+    if(strcmp(strings[0],"rmdir")==0){
+    	if(qtd_strings==2){
+	    	opcao = '4';
+	    	strcpy(nome, strings[1]);
+    	}
+	}
+	
+    if(strcmp(strings[0],"ls")==0){
+    	opcao = '5';
+    }
+    
+    if(strcmp(strings[0],"ls")==0 && strcmp(strings[1],"-l")==0){
+    	opcao = '6';
+    }
+    
+    if(strcmp(strings[0],"touch")==0){
+    	if(qtd_strings==3){
+	    	opcao = '7';
+	    	strcpy(nome, strings[1]);
+	    	tam = atoi(strings[2]);
+    	}
+    }
+    
+    if(strcmp(strings[0],"bad")==0){
+    	if(qtd_strings==2){
+	    	opcao = '8';
+	    	aux = atoi(strings[1]);
+    	}
+	}
+    
+    
+    return opcao;
 }
 
 
@@ -47,13 +104,11 @@ int main()
 		
 		do
 	    {
-	    	opcao=menu(caminho);
+	    	opcao=menu(caminho, nome, tam, aux);
 	    	
 	        switch(opcao)
 	        {
 	        case '1':
-	            printf("\nInforme o nome do diretorio\n");
-	        	scanf("%s",&nome);
 	        	linhacmd = cd(s, pdir, nome);
 	        	if(linhacmd != NULL)
 	        	{
@@ -71,39 +126,28 @@ int main()
 	        	cdponto(pdir,s);
 	            break;
 	        case '3':
-	        	printf("\nInforme o nome do diretorio a ser criado\n");
-	        	scanf("%s",&nome);
 	        	makedir(nome, s, p);
 	        	
 	            break;
 	        case '4':
-	        	printf("\nInforme o nome do diretorio a ser deletado\n");
-	        	scanf("%s",&nome);
 	        	removedir(nome,s,p);
 	            break;
 	        case '5':
 	        	clrscr();
-	        	printf("%s\n",caminho);
+	        	printf("%s",caminho);
 	        	list(s);
 	        	getch();
 	            break;
 	        case '6':
 	        	clrscr();
-	        	printf("%s\n",caminho);
+	        	printf("%s",caminho);
 	        	listL(s);
 	        	getch();
 	            break;
 	        case '7':
-	        	printf("\nInforme o nome do arquivo\n");
-	        	scanf("%s", &nome);
-	        	printf("Informe o tamanho dele em Bytes\n");
-	        	scanf("%d", &tam);
 	        	touch(nome,s,p,tam);
-	        	getch();
 	        	break;
 	    	case '8':
-		    	printf("\nInforme o numero do bloco\n");
-		    	scanf("%d", &aux);
 		    	defeituoso(d,aux);
 		    	getch();
 	    	break;

@@ -1,10 +1,9 @@
-#define MAXPILHA 1000
 
 struct TpPilha
 {
     int TOPO;
     int qtd;
-    int PILHA[MAXPILHA];
+    int *PILHA;
 };
 
 //Alterar para a pilha ter o mesmo tamanho do Disco, pois está retornando enddereços de blocos fora do vetor
@@ -19,12 +18,11 @@ int exibe(TpPilha p);
 
 void inicializa(TpPilha &p,int q)
 {
-    p.TOPO = -1;
-    p.qtd = q;
+    p.PILHA = new int[q];
+	p.TOPO = -1;
+	p.qtd = q;
  	for(int i = 0;i<q;i++)
-		insere(p,i);
-	
-	
+		insere(p,i);	
 }
 
 void insere(TpPilha &p, int Elemento)
@@ -42,21 +40,21 @@ int elementoTopo(TpPilha p)
     return p.PILHA[p.TOPO];
 }
 
-int cheia(int topo)
+int cheia(TpPilha p)
 {
-    return topo == MAXPILHA-1;
+    return p.TOPO == p.qtd -1;
 }
 
-int vazia(int topo)
+int vazia(TpPilha p)
 {
-    return topo == -1;
+    return p.TOPO == -1;
 }
 
-int exibe(TpPilha p)
+/*int exibe(TpPilha p)
 {
    while( !vazia(p.TOPO) )
         printf("\n%d",retira(p));
-}
+}*/
 
 
 

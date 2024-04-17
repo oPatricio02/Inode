@@ -1,4 +1,3 @@
-#define MAXPILHA 1000
 
 struct EntradaDiretorio 
 {
@@ -17,7 +16,7 @@ struct PilhaDir
 {
     int TOPO;
     int qtd;
-    Diretorio PILHA[MAXPILHA];
+    Diretorio *PILHA;
 };
 
 void inicializaDir(PilhaDir &p);
@@ -28,9 +27,11 @@ int cheiaDir(int topo);
 int vaziaDir(int topo);
 
 
-void inicializaDir(PilhaDir &p)
+void inicializaDir(PilhaDir &p,int qtde)
 {
+	p.PILHA = new Diretorio[qtde];
     p.TOPO = -1;
+    p.qtd = qtde;
 }
 
 void insereDir(PilhaDir &p, Diretorio Elemento)
@@ -48,14 +49,14 @@ Diretorio elementoTopoDir(PilhaDir p)
     return p.PILHA[p.TOPO];
 }
 
-int cheiaDir(int topo)
+int cheiaDir(PilhaDir p)
 {
-    return topo == MAXPILHA-1;
+    return p.TOPO ==p.qtd-1;
 }
 
-int vaziaDir(int topo)
+int vaziaDir(PilhaDir p )
 {
-    return topo == -1;
+    return p.TOPO == -1;
 }
 
 

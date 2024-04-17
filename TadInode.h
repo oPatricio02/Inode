@@ -36,6 +36,7 @@ void newInode(InodeP &i)
 	i.permissoes[9] = 'x';
 	i.permissoes[10] = '\0';
 	
+	
 }
 
 void newInodeD(InodeP &i)
@@ -108,7 +109,7 @@ void LiberaDisco(Disco &d) {
     d.blocos = NULL; 
 }
 
-void defeituoso(Disco &d,int num)
+void defeituoso(Disco &d,int num) //Correto
 {
 	d.blocos[num].tipo = 'B';
 }
@@ -121,10 +122,9 @@ struct Sistema
 	int diretorioPai;	
 };
 
-void IniciarSistema(Sistema &sis,Disco &d,int qtd, PilhaDir &pdir, TpPilha &p)
+void IniciarSistema(Sistema &sis,Disco &d,int qtd, PilhaDir &pdir, TpPilha &p)  //Correto
 {
     IniciaDisco(d,qtd);
-    inicializaDir(pdir);
     Diretorio raiz;
     raiz.cont = 0;
     strcpy(raiz.nome, "/");
@@ -135,26 +135,52 @@ void IniciarSistema(Sistema &sis,Disco &d,int qtd, PilhaDir &pdir, TpPilha &p)
 
 //Operações
 
-void list(Sistema s){
-	int i;
-	for(i=0; i<s.atual.cont; i++){
+void list(Sistema s){ //Correto
+	for(int i=0; i<s.atual.cont; i++){
 		printf("\n%s",s.atual.ed[i].nome);
 	}
 }
 
-void listL(Sistema s){
+void listL(Sistema s){  //Correto
 	int i;
 	
 	for(i=0; i<s.atual.cont; i++){
-		printf("\n%s, %d, %s, %s",
+		printf("\n%s, %d, %d %d %d, %s",
 		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.permissoes,
-		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.tamanho,
-		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.data,
+		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.tamanho*10,
+		
+		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.data[2],
+		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.data[3],
+		s.disco.blocos[s.atual.ed[i].numBlocoInode].inodeP.data[4],
 		s.atual.ed[i].nome);
 	}
 }
 
-void makedir(char *nome, Sistema &s, TpPilha &p){	
+void statusBloco(Sistema s)
+{
+	for(int i=0;i<s.disco.qtdBloco;i++)
+		printf("%d[%c]| ",i,s.disco.blocos[i].tipo);
+}
+
+void espacoLivre(Sistema s)
+{
+	int livre =0,ocupados = 0 ;
+	for(int i = 0;i<s.disco.qtdBloco;i++)
+	{
+		if(s.disco.blocos[i].tipo == 'F')
+			livre++;
+		else
+			ocupados++;
+	}
+	
+	printf("Bytes Livres: %d\n",livre*10);
+	printf("Bytes Ocupados: %d\n",ocupados*10);
+		
+}
+
+
+
+void makedir(char *nome, Sistema &s, TpPilha &p){	//Correto
 	int numbloco;
 	
 	if(s.atual.cont<=9)
@@ -178,45 +204,64 @@ void makedir(char *nome, Sistema &s, TpPilha &p){
 	}
 	else{
 		printf("Diretorio cheio!\n");
+		getch();
 	}
 		
 }
 
-void removedir(char *nome,Sistema s, TpPilha &p){
+
+void reordena(Sistema &s,int pos) //Correto
+{
+	int tl = s.atual.cont;
+	for(int i= pos;i<tl;i++)
+	{
+		s.atual.ed[i].numBlocoInode = s.atual.ed[i+1].numBlocoInode;
+		strcpy(s.atual.ed[i].nome,s.atual.ed[i+1].nome); 
+	}
+}
+
+void removedir(char *nome,Sistema &s, TpPilha &p){ //Correto
 	
 	int i=0;
 	while(i<s.atual.cont && strcmp(s.atual.ed[i].nome,nome) != 0 )	
 		i++;
 	if(strcmp(s.atual.ed[i].nome,nome) == 0)
 	{
-		int pos = s.atual.ed[i].numBlocoInode;
+		int pos = s.atual.ed[i].numBlocoInode; //numero do bloco
 		Diretorio dir = s.disco.blocos[pos].arq;
 		if(dir.cont == 0)
 		{
+			
 			s.disco.blocos[pos].tipo = 'F';
 			insere(p,pos);
 			strcpy(dir.nome,"");
 			strcpy(s.atual.ed[i].nome,"");
+			reordena(s,i);
+			s.atual.cont--;
 		}
 		else
 		{
 			printf("Diretorio cheio!\n");
+			getch();
 		}
 		
 	}
 	else
+	{
 		printf("Diretorio nao encontrado!");
+		getch();
+	}
+		
 		
 }
 
-//criar um arquivo regular   Falta correcao
-void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
+//criar um arquivo regular -  Completo aparentemente
+void touch(char *nome, Sistema &s, TpPilha &p,int tamanho)
 { 
 	int qtdb = tamanho/10; //Cada bloco cabe 10 Bytes.	
 	int pos,i =0;
-	if(qtdb >0)
+	if(qtdb >0 && s.disco.qtdBloco> qtdb)  //Corrigir flag
 	{
-		printf("i = %d , qtdb: %d , pos: %d \n", i,qtdb,pos);
 		if(s.atual.cont<=9)
 		{
 			strcpy(s.atual.ed[s.atual.cont].nome,nome);
@@ -224,7 +269,6 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 			s.atual.ed[s.atual.cont].numBlocoInode = pos; 
 			s.atual.cont++;
 			
-			printf("i = %d , qtdb: %d , pos: %d \n", i,qtdb,pos);
 			
 			InodeP inode;
 			inode.tamanho = qtdb;
@@ -233,9 +277,8 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 			s.disco.blocos[pos].tipo = 'I';
 			s.disco.blocos[pos].inodeP = inode; 
 			
-			while(i<qtdb && i<5)	//Enquanto estiver nos blocos normais, apos cria InodeSimples
+			while(i<5 && qtdb>0)	//Enquanto estiver nos blocos normais, apos cria InodeSimples
 			{
-				printf("i = %d , qtdb: %d , pos: %d ", i,qtdb,pos);
 				pos = retira(p);
 				inode.blocoArq[i] = pos;
 				s.disco.blocos[pos].tipo = 'A';
@@ -252,7 +295,7 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 				s.disco.blocos[pos].inodeS = inodeS;
 			
 				i = 0;
-				while(i<qtdb && i<5)   //Inode Simples
+				while(i<5 && qtdb>0)   //Inode Simples
 				{
 					pos = retira(p);
 					inodeS.blocos[i] = pos;
@@ -261,32 +304,36 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 					qtdb--;
 				}
 				
-				
-				InodeSimples inodeD;
-				pos = retira(p);
-				inode.BcDuplo = pos;
-				s.disco.blocos[pos].tipo = 'I';
-				s.disco.blocos[pos].inodeS = inodeD;
-			
-				i = 0;
-				while(i<5 && i<qtdb)  	//Inode Duplo
+				if(qtdb >0)
 				{
+					
+					InodeSimples inodeD;
 					pos = retira(p);
-					inodeD.blocos[i] = pos;
+					inode.BcDuplo = pos;
 					s.disco.blocos[pos].tipo = 'I';
-					InodeSimples inodeS;
-					s.disco.blocos[pos].inodeS = inodeS;
-					for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
+					s.disco.blocos[pos].inodeS = inodeD;
+				
+					i = 0;
+					while(i<5 && qtdb>0)  	//Inode Duplo
 					{
 						pos = retira(p);
-						inodeS.blocos[j] = pos;
-						s.disco.blocos[pos].tipo = 'A';
+						inodeD.blocos[i] = pos;
+						s.disco.blocos[pos].tipo = 'I';
+						InodeSimples inodeS;
+						s.disco.blocos[pos].inodeS = inodeS;
+						for(int j = 0;j<5  && j < qtdb;j++,qtdb--)
+						{
+							pos = retira(p);
+							inodeS.blocos[j] = pos;
+							s.disco.blocos[pos].tipo = 'A';
+						}
+						i++;
+						qtdb--;
 					}
-					i++;
-					qtdb--;
+					
+					//Inode Triplo
 				}
 				
-				//Inode Triplo
 				
 			}
 			
@@ -296,12 +343,19 @@ void touch(char *nome, Sistema s, TpPilha &p,int tamanho)
 		else
 		{
 			printf("Diretorio cheio!\n");
+			getch();
 		}
 	}
+	else
+	{
+		printf("Espaco de armazenamento insuficiente!\n");
+		getch();
+	}
+	
 	
 }
 
-void remove(char *nome,Sistema s,TpPilha &p){ //remove um arquivo
+void remove(char *nome,Sistema s,TpPilha &p){ //Falta completar
 	bool flag = false;
 	int i =0,pos,aux,tam;
 	InodeP inode;
@@ -375,7 +429,7 @@ void remove_palavra(char * frase, char * palavra)
     }   
 }
 
-char* cd(Sistema &s, PilhaDir &pdir, char *nome){
+char* cd(Sistema &s, PilhaDir &pdir, char *nome){		//Aparentemente correto
 	int i;
 	bool flag = false;
 	int aux;
@@ -392,12 +446,12 @@ char* cd(Sistema &s, PilhaDir &pdir, char *nome){
 		return s.atual.nome;
 	}
 	else{
-		printf("Diretorio não existe\n");
-		return "";
+		printf("Diretorio nao existe\n");
+		return NULL;
 	}
 }
 
-void cdponto(PilhaDir &pdir, Sistema &s){
+void cdponto(PilhaDir &pdir, Sistema &s){			//Aparentemente correto
 	Diretorio aux;
 	
 	if(pdir.TOPO!=0){ //verifica se não é o diretório raiz
